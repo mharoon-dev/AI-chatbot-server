@@ -2,6 +2,10 @@ import "dotenv/config";
 import express from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import cors from "cors";
+import { connectDB } from "./config/default.js";
+import { authRoutes } from "./routes/auth.js";
+import chatRoutes from "./routes/chat.js";
+import cloudinary from "cloudinary";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,6 +15,16 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 app.use(express.json());
 app.use(cors());
+connectDB();
+
+app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Click 'View API Keys' above to copy your API secret
+});
 
 const askQuestion = async (prompt) => {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
